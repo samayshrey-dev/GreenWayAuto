@@ -47,6 +47,7 @@ type Icon = typeof LayoutDashboard;
 
 const navigation: Array<{ label: string; href: string; icon: Icon }> = [
   { label: "Command center", href: "/app", icon: LayoutDashboard },
+  { label: "Job cards", href: "/app/job-cards", icon: ClipboardCheck },
   { label: "Customers", href: "/app/customers", icon: Users },
   { label: "Vehicles", href: "/app/vehicles", icon: Car },
   { label: "Parts", href: "/app/parts", icon: Boxes },
@@ -117,12 +118,12 @@ export default function Workspace({ user }: { user: User & { workshop?: Workshop
   useEffect(() => {
     if (location === "/app/inventory") {
       setLocation("/app/parts");
-    } else if (location === "/app/inspection" || location === "/app/reports" || location.startsWith("/app/job-cards")) {
+    } else if (location === "/app/inspection" || location === "/app/reports") {
       setLocation("/app");
     }
   }, [location, setLocation]);
 
-  const activeNav = navigation.find((item) => item.href === location) ?? navigation[0];
+  const activeNav = navigation.find((item) => item.href === location || (item.href === "/app/job-cards" && location.startsWith("/app/job-cards"))) ?? navigation[0];
   const workshop = user.workshop;
 
   const { data: metrics } = trpc.dashboard.getMetrics.useQuery();
@@ -281,11 +282,23 @@ export default function Workspace({ user }: { user: User & { workshop?: Workshop
         </header>
 
         <main className="workspace-content">
-          {activeNav.href === "/app" ? (
-            <DashboardView user={user} />
+          {location.startsWith("/app/job-cards/") ? (
+            <JobCardDetailWorkspace
+              jobIdOrNumber={location.replace("/app/job-cards/", "")}
+              workshop={workshop}
+              onBack={() => setLocation("/app/job-cards")}
+              onOpenHistory={(vid) => setHistoryVehicleId(vid)}
+            />
+          ) : activeNav.href === "/app" ? (
+            <DashboardView
+              user={user}
+              onNewJob={() => setNewJobModal(true)}
+              onNavigateDetail={(id) => setLocation(`/app/job-cards/${id}`)}
+            />
           ) : (
             <ModuleView
               module={activeNav.label}
+              onNewJob={() => setNewJobModal(true)}
               onAddCustomer={() => setAddCustomerModal(true)}
               onAddVehicle={() => setAddVehicleModal(true)}
               onOpenHistory={(vid) => setHistoryVehicleId(vid)}
@@ -354,7 +367,14 @@ function NavItem({ item, active, count, onNavigate }: { item: (typeof navigation
 // ============================================================================
 // 1. DASHBOARD VIEW
 // ============================================================================
-function DashboardView({ user }: { user: User & { workshop?: Workshop | null }; onNewJob?: () => void; onNavigateDetail?: (id: string | number) => void }) {
+function DashboardView({
+  user,
+  onNewJob,
+}: {
+  user: User & { workshop?: Workshop | null };
+  onNewJob?: () => void;
+  onNavigateDetail?: (id: string | number) => void;
+}) {
   const utils = trpc.useUtils();
   const { data: activities = [] } = trpc.dashboard.getActivity.useQuery();
   const { data: techs = [] } = trpc.technicians.list.useQuery();
@@ -368,6 +388,13 @@ function DashboardView({ user }: { user: User & { workshop?: Workshop | null }; 
           <h1>Good morning, {user.name ? user.name.split(" ")[0] : "Ahmed"}.</h1>
           <p>Live workshop operations, floor activity and team readiness.</p>
         </div>
+        {onNewJob && (
+          <div className="heading-actions">
+            <button className="button button-accent" onClick={onNewJob}>
+              <Plus size={17} /> New job card
+            </button>
+          </div>
+        )}
       </div>
 
       <div className="dashboard-grid" style={{ gridTemplateColumns: "1fr 1fr" }}>
@@ -904,6 +931,7 @@ function JobCardDetailWorkspace({
 // ============================================================================
 function ModuleView({
   module,
+  onNewJob,
   onAddCustomer,
   onAddVehicle,
   onOpenHistory,
@@ -916,6 +944,14 @@ function ModuleView({
 }) {
   const [, setLocation] = useLocation();
 
+  if (module === "Job cards") {
+    return (
+      <JobCardsListPage
+        onNewJob={() => onNewJob?.()}
+        onNavigateDetail={(id) => setLocation(`/app/job-cards/${id}`)}
+      />
+    );
+  }
   if (module === "Customers") {
     return <CustomersListPage onAddCustomer={onAddCustomer} />;
   }
@@ -945,14 +981,27 @@ function ModuleView({
 function JobCardsListPage({ onNewJob, onNavigateDetail }: { onNewJob: () => void; onNavigateDetail: (id: string | number) => void }) {
   const { data: jobs = [], isLoading } = trpc.jobCards.list.useQuery();
   const [filter, setFilter] = useState("all");
+  const [search, setSearch] = useState("");
 
   const filtered = jobs.filter((j) => {
-    if (filter === "all") return true;
-    if (filter === "approval") return j.status === "awaiting_approval";
-    if (filter === "in_progress") return j.status === "in_progress" || j.status === "diagnosing";
-    if (filter === "ready") return j.status === "ready_for_handover";
-    if (filter === "completed") return j.status === "completed";
-    return true;
+    if (filter === "approval" && j.status !== "awaiting_approval") return false;
+    if (filter === "in_progress" && j.status !== "in_progress" && j.status !== "diagnosing") return false;
+    if (filter === "ready" && j.status !== "ready_for_handover") return false;
+    if (filter === "completed" && j.status !== "completed") return false;
+
+    if (!search.trim()) return true;
+    const q = search.toLowerCase().trim();
+    return (
+      j.jobCardNumber.toLowerCase().includes(q) ||
+      (j.customer?.name && j.customer.name.toLowerCase().includes(q)) ||
+      (j.customer?.phone && j.customer.phone.includes(q)) ||
+      (j.vehicle?.plateNumber && j.vehicle.plateNumber.toLowerCase().includes(q)) ||
+      (j.vehicle?.make && j.vehicle.make.toLowerCase().includes(q)) ||
+      (j.vehicle?.model && j.vehicle.model.toLowerCase().includes(q)) ||
+      (j.technician?.name && j.technician.name.toLowerCase().includes(q)) ||
+      (j.serviceSummary && j.serviceSummary.toLowerCase().includes(q)) ||
+      (j.bayNumber && j.bayNumber.toLowerCase().includes(q))
+    );
   });
 
   return (
@@ -984,6 +1033,13 @@ function JobCardsListPage({ onNewJob, onNavigateDetail }: { onNewJob: () => void
       </div>
 
       <section className="panel">
+        <TableSearchBar
+          value={search}
+          onChange={setSearch}
+          placeholder="Search job cards by Job #, customer, plate, make, model, bay..."
+          count={filtered.length}
+          totalCount={jobs.length}
+        />
         <div className="job-table">
           <div className="table-head">
             <span>Job / vehicle</span>
@@ -997,7 +1053,22 @@ function JobCardsListPage({ onNewJob, onNavigateDetail }: { onNewJob: () => void
           {isLoading ? (
             <div style={{ padding: "30px", textAlign: "center" }}><Loader2 size={22} className="animate-spin" /></div>
           ) : filtered.length === 0 ? (
-            <div style={{ padding: "36px", textAlign: "center", color: "#6e8085" }}>No job cards found for this filter.</div>
+            <div style={{ padding: "36px", textAlign: "center", color: "#6e8085" }}>
+              {search.trim() ? (
+                <>
+                  No job cards matching "<strong>{search}</strong>".{" "}
+                  <button
+                    type="button"
+                    onClick={() => setSearch("")}
+                    style={{ border: "none", background: "none", color: "#327d94", fontWeight: 600, cursor: "pointer", textDecoration: "underline" }}
+                  >
+                    Clear search
+                  </button>
+                </>
+              ) : (
+                "No job cards found for this filter."
+              )}
+            </div>
           ) : (
             filtered.map((job) => (
               <div
