@@ -43,13 +43,16 @@ interface RelationalStore {
   activityLogs: ActivityLog[];
 }
 
-const DATA_DIR = path.join(process.cwd(), "data");
+const SEED_PATH = path.join(process.cwd(), "data", "easygarage_relational.json");
+const DATA_DIR = process.env.VERCEL ? "/tmp" : path.join(process.cwd(), "data");
 const STORE_PATH = path.join(DATA_DIR, "easygarage_relational.json");
 
 function ensureDirectoryExists(dir: string) {
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
-  }
+  try {
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+  } catch {}
 }
 
 // Simple deterministic password hash for local/dev fallback:
@@ -77,9 +80,10 @@ export class RelationalMemoryStore implements WorkshopDatabase {
 
   private loadFromDisk(): RelationalStore {
     ensureDirectoryExists(DATA_DIR);
-    if (fs.existsSync(STORE_PATH)) {
+    const candidatePath = fs.existsSync(STORE_PATH) ? STORE_PATH : (fs.existsSync(SEED_PATH) ? SEED_PATH : null);
+    if (candidatePath) {
       try {
-        const raw = fs.readFileSync(STORE_PATH, "utf-8");
+        const raw = fs.readFileSync(candidatePath, "utf-8");
         const parsed = JSON.parse(raw);
         // Dates revitalization
         return this.reviveDates(parsed);

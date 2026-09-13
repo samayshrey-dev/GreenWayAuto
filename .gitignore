@@ -16,6 +16,7 @@ build/
 
 # IDE and editor files
 .vscode/
+.vercel/
 .idea/
 *.swp
 *.swo
@@ -113,3 +114,5 @@ temp/
 client/public/__manus__/version.json
 .project-config.json
 cookies.txt
+
+.vercel
