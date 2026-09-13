@@ -47,7 +47,6 @@ type Icon = typeof LayoutDashboard;
 
 const navigation: Array<{ label: string; href: string; icon: Icon }> = [
   { label: "Command center", href: "/app", icon: LayoutDashboard },
-  { label: "Job cards", href: "/app/job-cards", icon: ClipboardCheck },
   { label: "Customers", href: "/app/customers", icon: Users },
   { label: "Vehicles", href: "/app/vehicles", icon: Car },
   { label: "Parts", href: "/app/parts", icon: Boxes },
@@ -80,7 +79,6 @@ export default function Workspace({ user }: { user: User & { workshop?: Workshop
   const [mobileNav, setMobileNav] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
-  const [newJobModal, setNewJobModal] = useState(false);
   const [addCustomerModal, setAddCustomerModal] = useState(false);
   const [addVehicleModal, setAddVehicleModal] = useState(false);
   const [historyVehicleId, setHistoryVehicleId] = useState<number | null>(null);
@@ -103,7 +101,6 @@ export default function Workspace({ user }: { user: User & { workshop?: Workshop
         setSearchOpen((prev) => !prev);
       } else if (e.key === "Escape") {
         setSearchOpen(false);
-        setNewJobModal(false);
         setAddCustomerModal(false);
         setAddVehicleModal(false);
         setHistoryVehicleId(null);
@@ -118,12 +115,12 @@ export default function Workspace({ user }: { user: User & { workshop?: Workshop
   useEffect(() => {
     if (location === "/app/inventory") {
       setLocation("/app/parts");
-    } else if (location === "/app/inspection" || location === "/app/reports") {
+    } else if (location === "/app/inspection" || location === "/app/reports" || location.startsWith("/app/job-cards")) {
       setLocation("/app");
     }
   }, [location, setLocation]);
 
-  const activeNav = navigation.find((item) => item.href === location || (item.href === "/app/job-cards" && location.startsWith("/app/job-cards"))) ?? navigation[0];
+  const activeNav = navigation.find((item) => item.href === location) ?? navigation[0];
   const workshop = user.workshop;
 
   const { data: metrics } = trpc.dashboard.getMetrics.useQuery();
@@ -282,23 +279,15 @@ export default function Workspace({ user }: { user: User & { workshop?: Workshop
         </header>
 
         <main className="workspace-content">
-          {location.startsWith("/app/job-cards/") ? (
-            <JobCardDetailWorkspace
-              jobIdOrNumber={location.replace("/app/job-cards/", "")}
-              workshop={workshop}
-              onBack={() => setLocation("/app/job-cards")}
-              onOpenHistory={(vid) => setHistoryVehicleId(vid)}
-            />
-          ) : activeNav.href === "/app" ? (
+          {activeNav.href === "/app" ? (
             <DashboardView
               user={user}
-              onNewJob={() => setNewJobModal(true)}
-              onNavigateDetail={(id) => setLocation(`/app/job-cards/${id}`)}
+              onAddCustomer={() => setAddCustomerModal(true)}
+              onAddVehicle={() => setAddVehicleModal(true)}
             />
           ) : (
             <ModuleView
               module={activeNav.label}
-              onNewJob={() => setNewJobModal(true)}
               onAddCustomer={() => setAddCustomerModal(true)}
               onAddVehicle={() => setAddVehicleModal(true)}
               onOpenHistory={(vid) => setHistoryVehicleId(vid)}
@@ -313,21 +302,9 @@ export default function Workspace({ user }: { user: User & { workshop?: Workshop
           onClose={() => setSearchOpen(false)}
           onSelect={(type, id) => {
             setSearchOpen(false);
-            if (type === "job") setLocation("/app/invoices");
-            else if (type === "customer") setLocation("/app/customers");
+            if (type === "customer") setLocation("/app/customers");
             else if (type === "vehicle") setLocation("/app/vehicles");
             else if (type === "part") setLocation("/app/parts");
-          }}
-        />
-      )}
-
-      {/* New Job Card Modal */}
-      {newJobModal && (
-        <NewJobCardModal
-          onClose={() => setNewJobModal(false)}
-          onSuccess={(jobId) => {
-            setNewJobModal(false);
-            setLocation(`/app/job-cards/${jobId}`);
           }}
         />
       )}
@@ -369,11 +346,12 @@ function NavItem({ item, active, count, onNavigate }: { item: (typeof navigation
 // ============================================================================
 function DashboardView({
   user,
-  onNewJob,
+  onAddCustomer,
+  onAddVehicle,
 }: {
   user: User & { workshop?: Workshop | null };
-  onNewJob?: () => void;
-  onNavigateDetail?: (id: string | number) => void;
+  onAddCustomer?: () => void;
+  onAddVehicle?: () => void;
 }) {
   const utils = trpc.useUtils();
   const { data: activities = [] } = trpc.dashboard.getActivity.useQuery();
@@ -388,13 +366,18 @@ function DashboardView({
           <h1>Good morning, {user.name ? user.name.split(" ")[0] : "Ahmed"}.</h1>
           <p>Live workshop operations, floor activity and team readiness.</p>
         </div>
-        {onNewJob && (
-          <div className="heading-actions">
-            <button className="button button-accent" onClick={onNewJob}>
-              <Plus size={17} /> New job card
+        <div className="heading-actions" style={{ display: "flex", gap: "8px" }}>
+          {onAddCustomer && (
+            <button className="button button-secondary" onClick={onAddCustomer}>
+              <Plus size={16} /> New customer
             </button>
-          </div>
-        )}
+          )}
+          {onAddVehicle && (
+            <button className="button button-accent" onClick={onAddVehicle}>
+              <Plus size={16} /> New vehicle
+            </button>
+          )}
+        </div>
       </div>
 
       <div className="dashboard-grid" style={{ gridTemplateColumns: "1fr 1fr" }}>
@@ -931,27 +914,17 @@ function JobCardDetailWorkspace({
 // ============================================================================
 function ModuleView({
   module,
-  onNewJob,
   onAddCustomer,
   onAddVehicle,
   onOpenHistory,
 }: {
   module: string;
-  onNewJob?: () => void;
   onAddCustomer: () => void;
   onAddVehicle: () => void;
   onOpenHistory: (vehicleId: number) => void;
 }) {
   const [, setLocation] = useLocation();
 
-  if (module === "Job cards") {
-    return (
-      <JobCardsListPage
-        onNewJob={() => onNewJob?.()}
-        onNavigateDetail={(id) => setLocation(`/app/job-cards/${id}`)}
-      />
-    );
-  }
   if (module === "Customers") {
     return <CustomersListPage onAddCustomer={onAddCustomer} />;
   }
@@ -1609,39 +1582,19 @@ function GenerateInvoiceModal({
 }) {
   const utils = trpc.useUtils();
   const { data: customers = [] } = trpc.customers.list.useQuery();
-  const { data: eligibleJobs = [], isLoading: loadingJobs } = trpc.invoices.listEligibleJobCards.useQuery();
   const { data: inventory = [] } = trpc.inventory.list.useQuery();
 
-  const [invoiceType, setInvoiceType] = useState<"With Job Card" | "Without Job Card">("Without Job Card");
-
-  // With Job Card state
-  const [selectedJobCardId, setSelectedJobCardId] = useState<number | "">("");
-
-  // Without Job Card state
   const [customerId, setCustomerId] = useState<number | "">("");
   const [invoiceDate, setInvoiceDate] = useState(() => new Date().toISOString().split("T")[0]);
   const [note, setNote] = useState("");
   const [items, setItems] = useState<Array<{ id: string; partId?: number; description: string; quantity: number | ""; rate: number | ""; amount: number }>>([
     { id: "1", description: "", quantity: 1, rate: "", amount: 0 },
   ]);
-
-  // Discount (applies to both cases)
   const [discount, setDiscount] = useState<number | "">("");
 
-  useEffect(() => {
-    if (eligibleJobs.length > 0 && !selectedJobCardId) {
-      setSelectedJobCardId(eligibleJobs[0].id);
-    }
-  }, [eligibleJobs, selectedJobCardId]);
-
-  const generateFromJobMutation = trpc.invoices.generateFromJobCard.useMutation();
   const createDirectMutation = trpc.invoices.createDirect.useMutation();
 
-  const selectedJob = typeof selectedJobCardId === "number" ? eligibleJobs.find((j) => j.id === selectedJobCardId) : null;
-  const estimatedSubtotal = invoiceType === "With Job Card"
-    ? (selectedJob ? selectedJob.subtotal : 0)
-    : items.reduce((sum, it) => sum + (Number(it.amount) || Number(it.quantity) * Number(it.rate) || 0), 0);
-
+  const estimatedSubtotal = items.reduce((sum, it) => sum + (Number(it.amount) || (Number(it.quantity) || 0) * (Number(it.rate) || 0) || 0), 0);
   const discountAmount = Math.max(0, Number(discount) || 0);
   const netAmount = Math.max(0, estimatedSubtotal - discountAmount);
   const vatAmount = Math.round(netAmount * 0.05 * 100) / 100;
@@ -1698,53 +1651,34 @@ function GenerateInvoiceModal({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (invoiceType === "With Job Card") {
-      if (!selectedJobCardId) {
-        alert("Please select an eligible job card to invoice");
-        return;
-      }
-      try {
-        const res = await generateFromJobMutation.mutateAsync({
-          jobCardId: Number(selectedJobCardId),
-          discount: discountAmount,
-        });
-        await utils.invoices.list.invalidate();
-        await utils.jobCards.list.invalidate();
-        const full = await utils.invoices.getById.fetch({ id: res.id });
-        onGenerated(full);
-      } catch (err: any) {
-        alert(err.message || "Failed to generate invoice");
-      }
-    } else {
-      if (!customerId) {
-        alert("Please select a customer");
-        return;
-      }
-      const validItems = items.filter((it) => it.description.trim().length > 0);
-      if (validItems.length === 0) {
-        alert("Please provide at least one item description");
-        return;
-      }
-      try {
-        const res = await createDirectMutation.mutateAsync({
-          customerId: Number(customerId),
-          invoiceDate,
-          note: note || undefined,
-          discount: discountAmount,
-          items: validItems.map((it) => ({
-            description: it.description,
-            quantity: Number(it.quantity) || 1,
-            rate: Number(it.rate) || 0,
-            amount: it.amount,
-            partId: it.partId,
-          })),
-        });
-        await utils.invoices.list.invalidate();
-        const full = await utils.invoices.getById.fetch({ id: res.id });
-        onGenerated(full);
-      } catch (err: any) {
-        alert(err.message || "Failed to generate direct invoice");
-      }
+    if (!customerId) {
+      alert("Please select a customer");
+      return;
+    }
+    const validItems = items.filter((it) => it.description.trim().length > 0);
+    if (validItems.length === 0) {
+      alert("Please provide at least one item description");
+      return;
+    }
+    try {
+      const res = await createDirectMutation.mutateAsync({
+        customerId: Number(customerId),
+        invoiceDate,
+        note: note || undefined,
+        discount: discountAmount,
+        items: validItems.map((it) => ({
+          description: it.description,
+          quantity: Number(it.quantity) || 1,
+          rate: Number(it.rate) || 0,
+          amount: it.amount,
+          partId: it.partId,
+        })),
+      });
+      await utils.invoices.list.invalidate();
+      const full = await utils.invoices.getById.fetch({ id: res.id });
+      onGenerated(full);
+    } catch (err: any) {
+      alert(err.message || "Failed to generate direct invoice");
     }
   };
 
@@ -1759,79 +1693,7 @@ function GenerateInvoiceModal({
         </div>
 
         <form onSubmit={handleSubmit} className="modal-form">
-          <label>
-            Invoice type
-            <select
-              value={invoiceType}
-              onChange={(e) => setInvoiceType(e.target.value as any)}
-              style={{ fontSize: "14px", fontWeight: 500 }}
-            >
-              <option value="With Job Card">With Job Card</option>
-              <option value="Without Job Card">Without Job Card</option>
-            </select>
-          </label>
-
-          {invoiceType === "With Job Card" ? (
-            <>
-              <label>
-                Job Card (Ready or Delivered, not yet invoiced)
-                <select
-                  value={selectedJobCardId}
-                  onChange={(e) => setSelectedJobCardId(Number(e.target.value))}
-                  required
-                >
-                  <option value="">Select job card...</option>
-                  {eligibleJobs.map((j) => (
-                    <option key={j.id} value={j.id}>
-                      {j.jobCardNumber} — {j.customer?.name} ({j.vehicle?.make} {j.vehicle?.model}) · AED {j.totalAmount.toFixed(2)}
-                    </option>
-                  ))}
-                </select>
-                {eligibleJobs.length === 0 && !loadingJobs && (
-                  <span style={{ fontSize: "12px", color: "#74868b", marginTop: "4px" }}>
-                    No eligible job cards. Mark a job as Ready or Delivered first.
-                  </span>
-                )}
-              </label>
-
-              <label>
-                Discount (AED)
-                <input
-                  type="number"
-                  min="0"
-                  step="1"
-                  value={discount}
-                  onChange={(e) => setDiscount(e.target.value === "" ? "" : Number(e.target.value))}
-                  placeholder="0"
-                />
-              </label>
-
-              {selectedJob && (
-                <div style={{ background: "#f5f8f7", padding: "14px 16px", borderRadius: "6px", fontSize: "12px", display: "grid", gap: "6px" }}>
-                  <div style={{ display: "flex", justifyContent: "space-between" }}>
-                    <span>Job Subtotal:</span>
-                    <strong>AED {selectedJob.subtotal.toFixed(2)}</strong>
-                  </div>
-                  {discountAmount > 0 && (
-                    <div style={{ display: "flex", justifyContent: "space-between", color: "#b94a42" }}>
-                      <span>Discount:</span>
-                      <strong>-AED {discountAmount.toFixed(2)}</strong>
-                    </div>
-                  )}
-                  <div style={{ display: "flex", justifyContent: "space-between" }}>
-                    <span>5% UAE VAT:</span>
-                    <strong>AED {vatAmount.toFixed(2)}</strong>
-                  </div>
-                  <div style={{ display: "flex", justifyContent: "space-between", borderTop: "1px dashed #cfd9d6", paddingTop: "6px", fontSize: "13px" }}>
-                    <span>Total Due:</span>
-                    <strong style={{ color: "#327d94" }}>AED {totalAmount.toFixed(2)}</strong>
-                  </div>
-                </div>
-              )}
-            </>
-          ) : (
-            <>
-              <div className="form-row">
+          <div className="form-row">
                 <label>
                   Customer
                   <select
@@ -1984,8 +1846,6 @@ function GenerateInvoiceModal({
                 <span>5% UAE VAT: AED {vatAmount.toFixed(2)}</span>
                 <strong style={{ color: "#256c81", fontSize: "12px" }}>Total: AED {totalAmount.toFixed(2)}</strong>
               </div>
-            </>
-          )}
 
           <div className="form-actions" style={{ justifyContent: "flex-end" }}>
             <button type="button" className="button button-quiet" onClick={onClose}>
@@ -1995,9 +1855,9 @@ function GenerateInvoiceModal({
               type="submit"
               className="button button-dark"
               style={{ minWidth: "110px" }}
-              disabled={generateFromJobMutation.isPending || createDirectMutation.isPending}
+              disabled={createDirectMutation.isPending}
             >
-              {generateFromJobMutation.isPending || createDirectMutation.isPending ? "Generating..." : "Generate"}
+              {createDirectMutation.isPending ? "Generating..." : "Generate"}
             </button>
           </div>
         </form>
@@ -2082,7 +1942,7 @@ function InvoiceDetailPreviewModal({
                     {jobCard.vehicle.make} {jobCard.vehicle.model} ({jobCard.vehicle.year})
                   </div>
                   <div style={{ color: "#617379", fontSize: "11px" }}>
-                    Plate: {jobCard.vehicle.plateCode} {jobCard.vehicle.plateNumber} · Job #{jobCard.jobCardNumber}
+                    Plate: {jobCard.vehicle.plateCode} {jobCard.vehicle.plateNumber}
                   </div>
                 </>
               ) : (
@@ -2224,7 +2084,7 @@ function InvoicesListPage() {
         <TableSearchBar
           value={search}
           onChange={setSearch}
-          placeholder="Search invoices by number, customer, phone, job card, status, TRN..."
+          placeholder="Search invoices by number, customer, phone, status, TRN..."
           count={filtered.length}
           totalCount={invoices.length}
         />
@@ -2555,10 +2415,10 @@ function LookupInvoicePaymentModal({
                       return (
                         <div>
                           <div style={{ fontSize: "13px", fontWeight: 600, color: "#223439", marginTop: "2px" }}>
-                            {linkedVehicle ? `${linkedVehicle.make} ${linkedVehicle.model} (${linkedVehicle.year})` : `Job #${matchedInvoice.jobCard.jobCardNumber}`}
+                            {linkedVehicle ? `${linkedVehicle.make} ${linkedVehicle.model} (${linkedVehicle.year})` : "Workshop Service"}
                           </div>
                           <div style={{ fontSize: "11px", color: "#617379" }}>
-                            {linkedVehicle ? `Plate: ${linkedVehicle.plateCode} ${linkedVehicle.plateNumber} · ` : ""}Job #{matchedInvoice.jobCard.jobCardNumber}
+                            {linkedVehicle ? `Plate: ${linkedVehicle.plateCode} ${linkedVehicle.plateNumber}` : "Vehicle Service"}
                           </div>
                         </div>
                       );
@@ -3949,7 +3809,7 @@ function GlobalSearchDialog({ onClose, onSelect }: { onClose: () => void; onSele
           <Search size={18} color="#6d8086" />
           <input
             autoFocus
-            placeholder="Search by job #, customer name, phone, plate number or part..."
+            placeholder="Search by customer name, phone, plate number or part..."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />
@@ -3959,35 +3819,16 @@ function GlobalSearchDialog({ onClose, onSelect }: { onClose: () => void; onSele
         <div className="search-results">
           {query.trim().length <= 1 ? (
             <div style={{ padding: "26px", textAlign: "center", color: "#809297", fontSize: "12px" }}>
-              Type at least 2 characters to search across all job cards, vehicles, clients and stock...
+              Type at least 2 characters to search across customers, vehicles and parts...
             </div>
           ) : isLoading ? (
             <div style={{ padding: "30px", textAlign: "center" }}><Loader2 size={20} className="animate-spin" /></div>
-          ) : results && (results.jobCards.length === 0 && results.customers.length === 0 && results.vehicles.length === 0 && results.inventory.length === 0) ? (
+          ) : results && (results.customers.length === 0 && results.vehicles.length === 0 && results.inventory.length === 0) ? (
             <div style={{ padding: "30px", textAlign: "center", color: "#74868c", fontSize: "13px" }}>
               No matches found for "{query}".
             </div>
           ) : (
             <>
-              {results?.jobCards && results.jobCards.length > 0 && (
-                <div>
-                  <div className="search-group-title">Job Cards</div>
-                  {results.jobCards.map((j) => (
-                    <div
-                      key={j.id}
-                      onClick={() => onSelect("job", j.id)}
-                      style={{ padding: "8px 10px", borderRadius: "4px", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center" }}
-                      className="search-item-hover"
-                    >
-                      <div>
-                        <strong style={{ fontSize: "12px", color: "#25353a" }}>{j.jobCardNumber} · {j.customerName}</strong>
-                        <div style={{ fontSize: "11px", color: "#6e8085" }}>{j.vehicleSummary} · {j.status.replace("_", " ")}</div>
-                      </div>
-                      <ChevronRight size={14} color="#9aa7a9" />
-                    </div>
-                  ))}
-                </div>
-              )}
 
               {results?.customers && results.customers.length > 0 && (
                 <div style={{ marginTop: "10px" }}>

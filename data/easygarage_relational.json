@@ -309,6 +309,19 @@
       "notes": null,
       "createdAt": "2026-09-13T06:18:57.935Z",
       "updatedAt": "2026-09-13T06:18:57.935Z"
+    },
+    {
+      "id": 22,
+      "workshopId": 1,
+      "name": "Omar Al Suwaidi",
+      "phone": "+971 52 987 6543",
+      "email": "omar.alsuwaidi@example.com",
+      "trn": "100293847500003",
+      "companyName": null,
+      "address": null,
+      "notes": null,
+      "createdAt": "2026-09-13T15:08:14.929Z",
+      "updatedAt": "2026-09-13T15:08:14.929Z"
     }
   ],
   "vehicles": [
@@ -653,6 +666,24 @@
       "notes": null,
       "createdAt": "2026-09-13T06:18:57.956Z",
       "updatedAt": "2026-09-13T06:18:57.956Z"
+    },
+    {
+      "id": 20,
+      "workshopId": 1,
+      "customerId": 22,
+      "make": "Porsche",
+      "model": "Macan GTS",
+      "year": 2023,
+      "plateCode": "X",
+      "plateNumber": "88992",
+      "emirate": "Dubai",
+      "vin": "WP1ZZZ95ZPLB12345",
+      "color": "Chalk",
+      "mileage": 28500,
+      "engine": null,
+      "notes": null,
+      "createdAt": "2026-09-13T15:08:14.950Z",
+      "updatedAt": "2026-09-13T15:08:14.950Z"
     }
   ],
   "technicians": [
@@ -1051,6 +1082,25 @@
       "completedAt": "2026-09-13T06:18:58.222Z",
       "createdAt": "2026-09-13T06:18:57.969Z",
       "updatedAt": "2026-09-13T06:18:58.222Z"
+    },
+    {
+      "id": 19,
+      "workshopId": 1,
+      "jobCardNumber": "EG-2419",
+      "customerId": 22,
+      "vehicleId": 20,
+      "technicianId": 1,
+      "bayNumber": "Bay 04",
+      "serviceSummary": "30,000 KM Major Service & Brake Inspection",
+      "status": "completed",
+      "promiseTime": "Today, 17:00",
+      "mileageIn": 28500,
+      "customerComplaints": "Slight vibration at high speed braking",
+      "approvalNotes": "Approved via WhatsApp by Omar Al Suwaidi",
+      "approvedAt": "2026-09-13T15:08:15.080Z",
+      "completedAt": "2026-09-13T15:08:15.230Z",
+      "createdAt": "2026-09-13T15:08:14.966Z",
+      "updatedAt": "2026-09-13T15:08:15.230Z"
     }
   ],
   "inspections": [
@@ -1203,6 +1253,16 @@
       "notes": "Inspection initialized at vehicle check-in.",
       "createdAt": "2026-09-13T06:18:57.969Z",
       "updatedAt": "2026-09-13T06:18:57.969Z"
+    },
+    {
+      "id": 16,
+      "workshopId": 1,
+      "jobCardId": 19,
+      "completedBy": null,
+      "status": "in_progress",
+      "notes": "Inspection initialized at vehicle check-in.",
+      "createdAt": "2026-09-13T15:08:14.966Z",
+      "updatedAt": "2026-09-13T15:08:14.966Z"
     }
   ],
   "inspectionItems": [
@@ -2645,6 +2705,102 @@
       "findings": "Inspected at intake.",
       "createdAt": "2026-09-13T06:18:57.969Z",
       "updatedAt": "2026-09-13T06:18:57.969Z"
+    },
+    {
+      "id": 121,
+      "workshopId": 1,
+      "inspectionId": 16,
+      "checkKey": "exterior",
+      "checkTitle": "Exterior walkaround",
+      "status": "pass",
+      "measurement": "Standard",
+      "findings": "Inspected at intake.",
+      "createdAt": "2026-09-13T15:08:14.966Z",
+      "updatedAt": "2026-09-13T15:08:14.966Z"
+    },
+    {
+      "id": 122,
+      "workshopId": 1,
+      "inspectionId": 16,
+      "checkKey": "lights",
+      "checkTitle": "Lights & signals",
+      "status": "pass",
+      "measurement": "Standard",
+      "findings": "Inspected at intake.",
+      "createdAt": "2026-09-13T15:08:14.966Z",
+      "updatedAt": "2026-09-13T15:08:14.966Z"
+    },
+    {
+      "id": 123,
+      "workshopId": 1,
+      "inspectionId": 16,
+      "checkKey": "tyres",
+      "checkTitle": "Tyres & alignment",
+      "status": "pass",
+      "measurement": "Standard",
+      "findings": "Inspected at intake.",
+      "createdAt": "2026-09-13T15:08:14.966Z",
+      "updatedAt": "2026-09-13T15:08:14.966Z"
+    },
+    {
+      "id": 124,
+      "workshopId": 1,
+      "inspectionId": 16,
+      "checkKey": "fluids",
+      "checkTitle": "Fluids & leaks",
+      "status": "pass",
+      "measurement": "Standard",
+      "findings": "Inspected at intake.",
+      "createdAt": "2026-09-13T15:08:14.966Z",
+      "updatedAt": "2026-09-13T15:08:14.966Z"
+    },
+    {
+      "id": 125,
+      "workshopId": 1,
+      "inspectionId": 16,
+      "checkKey": "brakes",
+      "checkTitle": "Brakes",
+      "status": "attention",
+      "measurement": "Front pads 3.2mm, rotors scored",
+      "findings": "Front brake pads worn below 4mm. Rotors need skim or replacement.",
+      "createdAt": "2026-09-13T15:08:14.966Z",
+      "updatedAt": "2026-09-13T15:08:15.002Z"
+    },
+    {
+      "id": 126,
+      "workshopId": 1,
+      "inspectionId": 16,
+      "checkKey": "battery",
+      "checkTitle": "Battery & charging",
+      "status": "pass",
+      "measurement": "Standard",
+      "findings": "Inspected at intake.",
+      "createdAt": "2026-09-13T15:08:14.966Z",
+      "updatedAt": "2026-09-13T15:08:14.966Z"
+    },
+    {
+      "id": 127,
+      "workshopId": 1,
+      "inspectionId": 16,
+      "checkKey": "ac",
+      "checkTitle": "AC performance",
+      "status": "pass",
+      "measurement": "Standard",
+      "findings": "Inspected at intake.",
+      "createdAt": "2026-09-13T15:08:14.966Z",
+      "updatedAt": "2026-09-13T15:08:14.966Z"
+    },
+    {
+      "id": 128,
+      "workshopId": 1,
+      "inspectionId": 16,
+      "checkKey": "road_test",
+      "checkTitle": "Road test",
+      "status": "pass",
+      "measurement": "Standard",
+      "findings": "Inspected at intake.",
+      "createdAt": "2026-09-13T15:08:14.966Z",
+      "updatedAt": "2026-09-13T15:08:14.966Z"
     }
   ],
   "labourItems": [
@@ -2787,6 +2943,16 @@
       "hourlyRate": "250.00",
       "amount": "875.00",
       "createdAt": "2026-09-13T06:18:58.033Z"
+    },
+    {
+      "id": 15,
+      "workshopId": 1,
+      "jobCardId": 19,
+      "description": "Major Service Labour (Oil + Filters + Inspection)",
+      "hours": "3.50",
+      "hourlyRate": "250.00",
+      "amount": "875.00",
+      "createdAt": "2026-09-13T15:08:15.043Z"
     }
   ],
   "inventoryItems": [
@@ -2798,12 +2964,12 @@
       "category": "Filters",
       "unitPrice": "48.00",
       "costPrice": "26.00",
-      "onHand": 5,
+      "onHand": 3,
       "reorderPoint": 8,
       "binLocation": "Shelf A-02",
       "supplier": "Bosch Middle East",
       "createdAt": "2026-09-13T02:21:52.590Z",
-      "updatedAt": "2026-09-13T06:18:58.044Z"
+      "updatedAt": "2026-09-13T15:08:15.054Z"
     },
     {
       "id": 2,
@@ -3024,6 +3190,17 @@
       "unitPrice": "48.00",
       "totalPrice": "96.00",
       "createdAt": "2026-09-13T06:18:58.043Z"
+    },
+    {
+      "id": 14,
+      "workshopId": 1,
+      "jobCardId": 19,
+      "partId": 1,
+      "partName": "Bosch Oil Filter · 0986AF",
+      "quantity": 2,
+      "unitPrice": "48.00",
+      "totalPrice": "96.00",
+      "createdAt": "2026-09-13T15:08:15.054Z"
     }
   ],
   "invoices": [
@@ -3464,6 +3641,48 @@
       "dueDate": "2026-09-20T00:00:00.000Z",
       "createdAt": "2026-09-13T06:18:58.253Z",
       "updatedAt": "2026-09-13T06:18:58.253Z"
+    },
+    {
+      "id": 23,
+      "workshopId": 1,
+      "jobCardId": 19,
+      "customerId": 22,
+      "invoiceNumber": "INV-2419",
+      "subtotal": "971.00",
+      "discount": "0.00",
+      "vatRate": "0.0500",
+      "vatAmount": "48.55",
+      "totalAmount": "1019.55",
+      "amountPaid": "1019.55",
+      "status": "paid",
+      "trn": "100234567890003",
+      "note": null,
+      "itemsJson": null,
+      "issuedAt": "2026-09-13T15:08:15.147Z",
+      "dueDate": "2026-09-20T15:08:15.147Z",
+      "createdAt": "2026-09-13T15:08:15.147Z",
+      "updatedAt": "2026-09-13T15:08:15.159Z"
+    },
+    {
+      "id": 24,
+      "workshopId": 1,
+      "jobCardId": null,
+      "customerId": 22,
+      "invoiceNumber": "INV-0024",
+      "subtotal": "410.00",
+      "discount": "50.00",
+      "vatRate": "0.0500",
+      "vatAmount": "18.00",
+      "totalAmount": "378.00",
+      "amountPaid": "0.00",
+      "status": "draft",
+      "trn": "100234567890003",
+      "note": "Direct counter sale: Oil service and wiper blades",
+      "itemsJson": "[{\"description\":\"Synthetic Engine Oil (5L)\",\"quantity\":1,\"rate\":250,\"amount\":250},{\"description\":\"Bosch Aerotwin Wiper Blades\",\"quantity\":2,\"rate\":80,\"amount\":160}]",
+      "issuedAt": "2026-09-13T00:00:00.000Z",
+      "dueDate": "2026-09-20T00:00:00.000Z",
+      "createdAt": "2026-09-13T15:08:15.255Z",
+      "updatedAt": "2026-09-13T15:08:15.255Z"
     }
   ],
   "payments": [
@@ -3586,9 +3805,121 @@
       "notes": "Paid via Visa ending 4920 at reception desk",
       "paidAt": "2026-09-13T06:18:58.148Z",
       "createdAt": "2026-09-13T06:18:58.148Z"
+    },
+    {
+      "id": 11,
+      "workshopId": 1,
+      "invoiceId": 23,
+      "customerId": 22,
+      "amount": "1019.55",
+      "paymentMethod": "card",
+      "reference": "AUTH-DXB-998822",
+      "notes": "Paid via Visa ending 4920 at reception desk",
+      "paidAt": "2026-09-13T15:08:15.159Z",
+      "createdAt": "2026-09-13T15:08:15.159Z"
     }
   ],
   "activityLogs": [
+    {
+      "id": 125,
+      "workshopId": 1,
+      "userId": null,
+      "jobCardId": null,
+      "title": "Direct invoice created",
+      "copy": "INV-0024 for Omar Al Suwaidi (AED 378.00)",
+      "tone": "green",
+      "createdAt": "2026-09-13T15:08:15.265Z"
+    },
+    {
+      "id": 124,
+      "workshopId": 1,
+      "userId": null,
+      "jobCardId": 19,
+      "title": "Status changed: completed",
+      "copy": "Job EG-2419 updated to completed",
+      "tone": "green",
+      "createdAt": "2026-09-13T15:08:15.230Z"
+    },
+    {
+      "id": 123,
+      "workshopId": 1,
+      "userId": null,
+      "jobCardId": 19,
+      "title": "Payment settled",
+      "copy": "AED 1,019.55 received via card for INV-2419",
+      "tone": "steel",
+      "createdAt": "2026-09-13T15:08:15.212Z"
+    },
+    {
+      "id": 122,
+      "workshopId": 1,
+      "userId": null,
+      "jobCardId": 19,
+      "title": "Status changed: ready for_handover",
+      "copy": "Job EG-2419 updated to ready for_handover",
+      "tone": "blue",
+      "createdAt": "2026-09-13T15:08:15.132Z"
+    },
+    {
+      "id": 121,
+      "workshopId": 1,
+      "userId": null,
+      "jobCardId": 19,
+      "title": "Status changed: inspection passed",
+      "copy": "Job EG-2419 updated to inspection passed",
+      "tone": "blue",
+      "createdAt": "2026-09-13T15:08:15.116Z"
+    },
+    {
+      "id": 120,
+      "workshopId": 1,
+      "userId": null,
+      "jobCardId": 19,
+      "title": "Status changed: in progress",
+      "copy": "Job EG-2419 updated to in progress",
+      "tone": "blue",
+      "createdAt": "2026-09-13T15:08:15.098Z"
+    },
+    {
+      "id": 119,
+      "workshopId": 1,
+      "userId": null,
+      "jobCardId": 19,
+      "title": "Status changed: approved",
+      "copy": "Job EG-2419 updated to approved",
+      "tone": "green",
+      "createdAt": "2026-09-13T15:08:15.080Z"
+    },
+    {
+      "id": 118,
+      "workshopId": 1,
+      "userId": null,
+      "jobCardId": null,
+      "title": "Part below reorder point",
+      "copy": "Bosch Oil Filter · 0986AF (3 left, reorder at 8)",
+      "tone": "amber",
+      "createdAt": "2026-09-13T15:08:15.055Z"
+    },
+    {
+      "id": 117,
+      "workshopId": 1,
+      "userId": null,
+      "jobCardId": 19,
+      "title": "Technician assigned",
+      "copy": "Omar Khalid assigned to EG-2419",
+      "tone": "blue",
+      "createdAt": "2026-09-13T15:08:15.018Z"
+    },
+    {
+      "id": 116,
+      "workshopId": 1,
+      "userId": null,
+      "jobCardId": 19,
+      "title": "Job card created",
+      "copy": "EG-2419 opened for 30,000 KM Major Service & Brake Inspection",
+      "tone": "blue",
+      "createdAt": "2026-09-13T15:08:14.967Z"
+    },
     {
       "id": 115,
       "workshopId": 1,
