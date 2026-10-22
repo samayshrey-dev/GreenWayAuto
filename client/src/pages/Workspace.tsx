@@ -37,7 +37,7 @@ import {
   X,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { useLocation } from "wouter";
+import { Link, useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { BrandMark } from "@/components/BrandLogo";
 import type { FullJobCard } from "../../../server/db/types";
@@ -130,10 +130,10 @@ export default function Workspace({ user }: { user: User & { workshop?: Workshop
       {/* Sidebar */}
       <aside className={`app-sidebar ${mobileNav ? "mobile-open" : ""}`}>
         <div className="sidebar-top">
-          <a className="brand brand-app" href="/">
+          <Link className="brand brand-app" href="/app">
             <span className="brand-mark"><BrandMark size={19} /></span>
             <span>Green<span>Way</span> Auto</span>
-          </a>
+          </Link>
           <button className="icon-button mobile-close" onClick={() => setMobileNav(false)} aria-label="Close navigation">
             <X size={18} />
           </button>

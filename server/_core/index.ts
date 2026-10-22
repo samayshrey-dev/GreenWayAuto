@@ -9,14 +9,26 @@ import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
 
-function isPortAvailable(port: number): Promise<boolean> {
+if (!process.env.NODE_ENV) {
+  process.env.NODE_ENV = "development";
+}
+
+function checkPort(port: number, host: string): Promise<boolean> {
   return new Promise(resolve => {
     const server = net.createServer();
-    server.listen(port, () => {
+    server.once("error", () => resolve(false));
+    server.listen({ port, host }, () => {
       server.close(() => resolve(true));
     });
-    server.on("error", () => resolve(false));
   });
+}
+
+async function isPortAvailable(port: number): Promise<boolean> {
+  const [ipv4, ipv6] = await Promise.all([
+    checkPort(port, "127.0.0.1"),
+    checkPort(port, "::1"),
+  ]);
+  return ipv4 && ipv6;
 }
 
 async function findAvailablePort(startPort: number = 3000): Promise<number> {

@@ -7,7 +7,7 @@ import { Route, Switch, useLocation } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { trpc } from "./lib/trpc";
-import Home, { AuthPage, OnboardingPage } from "./pages/Home";
+import { AuthPage, OnboardingPage } from "./pages/Home";
 import Workspace from "./pages/Workspace";
 
 function ProtectedWorkspace() {
@@ -81,7 +81,7 @@ function ProtectedOnboarding() {
 function AppRouter() {
   return (
     <Switch>
-      <Route path="/" component={Home} />
+      <Route path="/" component={LoginPage} />
       <Route path="/login" component={LoginPage} />
       <Route path="/signup" component={SignupPage} />
       <Route path="/onboarding" component={ProtectedOnboarding} />

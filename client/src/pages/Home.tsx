@@ -12,7 +12,7 @@ import {
   Users,
 } from "lucide-react";
 import { useState } from "react";
-import { useLocation } from "wouter";
+import { Link, useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { BrandMark } from "@/components/BrandLogo";
 
@@ -260,10 +260,10 @@ export function AuthPage({ mode }: { mode: AuthMode }) {
   return (
     <main className="auth-shell">
       <div className="auth-panel">
-        <a className="brand" href="/">
+        <Link className="brand" href="/">
           <span className="brand-mark"><BrandMark size={19} /></span>
           <span>Green<span>Way</span> Auto</span>
-        </a>
+        </Link>
         <div className="auth-copy">
           <div className="eyebrow"><span className="eyebrow-line" /> {isLogin ? "Welcome back" : "Built for your next shift"}</div>
           <h1>{isLogin ? "Back to the floor." : "Start with a cleaner bay."}</h1>
@@ -350,7 +350,7 @@ export function AuthPage({ mode }: { mode: AuthMode }) {
 
         <p className="auth-switch">
           {isLogin ? "New to GreenWay Auto?" : "Already have a workspace?"}{" "}
-          <a href={isLogin ? "/signup" : "/login"}>{isLogin ? "Create one" : "Sign in"}</a>
+          <Link href={isLogin ? "/signup" : "/login"}>{isLogin ? "Create one" : "Sign in"}</Link>
         </p>
       </div>
 
@@ -398,10 +398,10 @@ export function OnboardingPage() {
   return (
     <main className="onboarding-shell">
       <div className="onboarding-card">
-        <a className="brand" href="/">
+        <Link className="brand" href="/">
           <span className="brand-mark"><BrandMark size={19} /></span>
           <span>Green<span>Way</span> Auto</span>
-        </a>
+        </Link>
         <div className="onboarding-progress">
           <span className="active" /><span /><span /><span />
         </div>
